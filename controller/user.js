@@ -216,14 +216,16 @@ router.put(
   catchAsyncError(async (req, res, next) => {
     try {
       const existsUser = await User.findById(req.user.id);
-      const existAvatarPath = `uploads/${existsUser.avatar}`;
+      const existAvatarPath = path.join(__dirname, "public", "uploads", existsUser.avatar);
 
       fs.unlinkSync(existAvatarPath);
-      const fileUrl = path.join(req.file.filename);
+      const fileUrl = path.join("uploads", req.file.filename);
 
       const user = await User.findByIdAndUpdate(req.user.id, {
         avatar: fileUrl,
-      });
+      },
+      {new: true}
+      );
 
       res.status(200).json({
         success: true,
