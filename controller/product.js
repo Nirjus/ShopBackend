@@ -37,6 +37,9 @@ router.post(
           url: result.secure_url,
         });
        }
+       const productData = req.body;
+       productData.images = imagesLinks;
+       productData.shop = shop;
 
         const product = await Product.create(productData);
 
