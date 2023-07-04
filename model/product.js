@@ -31,9 +31,15 @@ const productSchema = new mongoose.Schema({
     },
     images:[
         {
-            type:String,
-            required:[true, "Please enter your product Pictures!"],
-        },
+            public_id: {
+              type: String,
+              required: true,
+            },
+            url: {
+              type: String,
+              required: true,
+            },
+          },
     ],
     reviews:[
          {
