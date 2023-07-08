@@ -97,7 +97,7 @@ router.delete(
         return next(new ErrorHandler("event not found with thid Id", 500));
       }  
 
-      for (let i = 0; 1 < event.images.length; i++) {
+      for (let i = 0; i < event.images.length; i++) {
         const result = await cloudinary.v2.uploader.destroy(
           event.images[i].public_id
         );
