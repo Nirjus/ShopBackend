@@ -91,7 +91,7 @@ router.delete(
   isSeller,
   catchAsyncError(async (req, res, next) => {
     try {
-      const event = req.params.id;
+      const event = await Event.findById(req.params.id);
 
       if (!event) {
         return next(new ErrorHandler("event not found with thid Id", 500));
@@ -103,7 +103,7 @@ router.delete(
         );
       }
     
-      await event.remove();
+      await event.deleteOne();
       res.status(201).json({
         success: true,
         message:"Event Deleted Successfully!",
