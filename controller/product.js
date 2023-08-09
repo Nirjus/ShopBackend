@@ -27,7 +27,7 @@ router.post(
 
        const imagesLinks = [];
 
-       for(let i=0; i<= images.length; i++){
+       for(let i=0; i< images.length; i++){
         const result = await cloudinary.v2.uploader.upload(images[i], {
           folder: "products",
         });
@@ -83,7 +83,7 @@ router.delete(
         return next(new ErrorHandler("Product not found with thid Id", 404));
       }
 
-      for (let i = 0; i <= product.images.length; i++) {
+      for (let i = 0; i < product.images.length; i++) {
         const result = await cloudinary.v2.uploader.destroy(
           product.images[i].public_id
         );
