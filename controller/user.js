@@ -39,7 +39,7 @@ router.post("/create-user", async (req, res, next) => {
       await sendMail({
         email: user.email,
         subject: "Activate your account",
-        message: `Hello ${user.name}, please click to the link to activate your account: ${activationUrl}`,
+        html: `Hello ${user.name}, please click to the link to activate your account: ${activationUrl}`,
       });
       res.status(201).json({
         success: true,

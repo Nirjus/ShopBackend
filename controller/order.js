@@ -38,7 +38,35 @@ router.post(
         });
         orders.push(order);
       }
-
+      try {
+        await sendMail({
+          email: user.email,
+          subject: "Your Order hasbeen placed",
+          html: `
+          <div style="background-color: #D2C7BA; width:100%; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+          <img src="https://res.cloudinary.com/dux3nrcwg/image/upload/v1693261817/shopLogo_1_yalmlu.png" alt="Logo" style="width:100px; height:20%; margin:5px;"/>
+          <div style="background-color: #fff; width:80%; height:80%;">
+          Hey you ${user.name} your order is confirmed, it will take 2 days to 3 days for delevary
+          ${orders.map(order => `
+          <h3 style="background-color: #e8e7e5">Order ID: ${order._id}</h3>
+          <ul>
+            ${order.cart.map(item => `<li>${item.name}  ---->  $${item.discountPrice}*${item.qty}</li>`).join('')}
+          </ul>
+          <p>Total Price: $${order.cart.reduce((total, item) => total + item.discountPrice * item.qty, 0)}</p>
+        `).join('')}
+          
+          </div>
+          </div>
+          `
+        });
+        res.status(201).json({
+          success: true,
+          message: `please ckeck your email:- ${user.email} for invoice Receipt`,
+        });
+      } catch (error) {
+        return next(new ErrorHandler(error.message, 500));
+      }
+      
       res.status(201).json({
         success: true,
         orders,

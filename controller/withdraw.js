@@ -24,7 +24,7 @@ router.post(
         await sendMail({
           email: req.seller.email,
           subject: "Withdraw request",
-          message: `Hello ${req.seller.name}, Your withdraw request of: ${amount}$ is processing, It will take 2 to 3 days to processing`,
+          html: `Hello ${req.seller.name}, Your withdraw request of: ${amount}$ is processing, It will take 2 to 3 days to processing`,
         });
         res.status(201).json({
           success: true,
@@ -102,7 +102,7 @@ router.put(
         await sendMail({
           email: seller.email,
           subject: "Payment confirmation",
-          message: `Hello ${seller.name} your withdraw request of ${withdraw.amount}$ is on the way. Deliviery time depends on your banks rules. It usually take 2 days to 7 days`,
+          html: `Hello ${seller.name} your withdraw request of ${withdraw.amount}$ is on the way. Deliviery time depends on your banks rules. It usually take 2 days to 7 days`,
         });
       } catch (error) {
       return next(new ErrorHandler(error.message, 500));
