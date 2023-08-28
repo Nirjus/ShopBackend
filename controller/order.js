@@ -6,7 +6,7 @@ const catchAsyncError = require("../middleware/catchAsyncError");
 const { isAuthenticated, isSeller, isAdmin } = require("../middleware/auth");
 const ErrorHandler = require("../utils/ErrorHandler");
 const Shop = require("../model/shop");
-
+const sendMail = require("../utils/sendMail");
 //     create order
 router.post(
   "/create-order",
@@ -66,7 +66,7 @@ router.post(
       } catch (error) {
         return next(new ErrorHandler(error.message, 500));
       }
-      
+
       res.status(201).json({
         success: true,
         orders,
