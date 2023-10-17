@@ -19,27 +19,27 @@ router.post(
       } else {
         let images = [];
 
-       if(typeof req.body.images === "string"){
-        images.push(req.body.images);
-       }else{
-        images = req.body.images; 
-       }
+        if (typeof req.body.images === "string") {
+          images.push(req.body.images);
+        } else {
+          images = req.body.images;
+        }
 
-       const imagesLinks = [];
+        const imagesLinks = [];
 
-       for(let i=0; i< images.length; i++){
-        const result = await cloudinary.v2.uploader.upload(images[i], {
-          folder: "products",
-        });
+        for (let i = 0; i < images.length; i++) {
+          const result = await cloudinary.v2.uploader.upload(images[i], {
+            folder: "products",
+          });
 
-        imagesLinks.push({
-          public_id: result.public_id,
-          url: result.secure_url,
-        });
-       }
-       const productData = req.body;
-       productData.images = imagesLinks;
-       productData.shop = shop;
+          imagesLinks.push({
+            public_id: result.public_id,
+            url: result.secure_url,
+          });
+        }
+        const productData = req.body;
+        productData.images = imagesLinks;
+        productData.shop = shop;
 
         const product = await Product.create(productData);
 
@@ -89,7 +89,7 @@ router.delete(
         );
       }
 
-     await product.deleteOne();
+      await product.deleteOne();
 
       res.status(201).json({
         success: true,
@@ -173,24 +173,116 @@ router.put(
   })
 );
 
-  //    all  Products -- fro Admin
-  router.get(
-    "/admin-all-products",
-    isAuthenticated,
-    isAdmin("Admin"),
-    catchAsyncError(async (req, res, next) => {
-      try {
-        const products = await Product.find().sort({
-          createdAt: -1,
-        });
-        res.status(201).json({
-          success: true,
-          products,
-        });
-      } catch (error) {
-        return next(new ErrorHandler(error.message, 500));
+//    all  Products -- fro Admin
+router.get(
+  "/admin-all-products",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncError(async (req, res, next) => {
+    try {
+      const products = await Product.find().sort({
+        createdAt: -1,
+      });
+      res.status(201).json({
+        success: true,
+        products,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+router.put(
+  "/update-product/:id",
+  isSeller,
+  catchAsyncError(async (req, res, next) => {
+    try {
+      const {name,description,category,tags,originalPrice,discountPrice,stock,images} = req.body;
+      const product = await Product.findById(req.params.id);
+        
+      if (!product) {
+        return next(new ErrorHandler("Product not found with thid Id", 404));
       }
-    })
-  );
+      const updates = {};
+
+      if(name){
+        updates.name = name;
+      }
+      if(description){
+        updates.description = description;
+      }
+      if(category){
+        updates.category = category;
+      }
+      if(tags){
+        updates.tags = tags;
+      }
+      if(originalPrice){
+        updates.originalPrice = originalPrice;
+      }
+      if(discountPrice){
+        updates.discountPrice = discountPrice;
+      }
+      if(stock){
+        updates.stock = stock;
+      }
+      if(images){
+        const myCloud = await cloudinary.v2.uploader.upload(images,{
+          folder:"products"
+        })
+        const newImage = {
+          public_id: myCloud.public_id,
+          url: myCloud.secure_url
+      };
+  
+        updates.images = [...product.images, newImage];
+      }
+    
+      const updatedProduct = await Product.findByIdAndUpdate(req.params.id,updates,{new:true});
+      if(!updatedProduct){
+        return next(new ErrorHandler("Product not updated successfully", 404));
+      }
+
+     res.status(201).json({
+      success: true,
+      message: "Product updated successfully",
+      updatedProduct
+     })
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+router.put("/delete-product-image/:id",
+isSeller,
+catchAsyncError(async (req, res, next) => {
+  try {
+    const {index} = req.body;
+    const product = await Product.findById(req.params.id);
+
+      if(index >=0 && index < product.images.length){
+        if(product.images[index]){
+          await cloudinary.v2.uploader.destroy(product.images[index].public_id);
+  
+          product.images.splice(index,1);
+          await product.save();
+        }else{
+          return next(new ErrorHandler("Image did not exists",500));
+        }
+      }else{
+        return next(new ErrorHandler("Index not found", 500));
+      }
+      res.status(201).json({
+        success: true,
+        message: "Image deleted successfully",
+      })
+
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+})
+)
 
 module.exports = router;
