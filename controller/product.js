@@ -198,14 +198,15 @@ router.put(
   isSeller,
   catchAsyncError(async (req, res, next) => {
     try {
-      const {name,description,category,tags,originalPrice,discountPrice,stock,images} = req.body;
+      const {name,description,category,tags,originalPrice,discountPrice,stock,images,shopId} = req.body;
       const product = await Product.findById(req.params.id);
+      const shop = await Shop.findById(shopId);
         
       if (!product) {
         return next(new ErrorHandler("Product not found with thid Id", 404));
       }
       const updates = {};
-
+      updates.shop = shop;
       if(name){
         updates.name = name;
       }
@@ -238,7 +239,7 @@ router.put(
   
         updates.images = [...product.images, newImage];
       }
-    
+       
       const updatedProduct = await Product.findByIdAndUpdate(req.params.id,updates,{new:true});
       if(!updatedProduct){
         return next(new ErrorHandler("Product not updated successfully", 404));
