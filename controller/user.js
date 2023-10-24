@@ -351,7 +351,7 @@ catchAsyncError(async (req, res, next) => {
       <h1> Hey ${user.name}, </h1> 
      <h3> if you want to reset your password , click this link bellow.</h3>
       <br/>
-     <h3> <a href="http://localhost:3000/reset-password/${token}" target="_blank">click!</a> </h3>
+     <h3> <a href="https://shop-app-s8q6.vercel.app/reset-password/${token}" target="_blank">click!</a> </h3>
       `
     }
     await sendMail(emaildata);
