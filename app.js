@@ -8,7 +8,7 @@ const cors = require("cors");
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin:["https://shop-app-s8q6.vercel.app",],
+    origin:["http://localhost:3000",],
     credentials:true,
 }));
 

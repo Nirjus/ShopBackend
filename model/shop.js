@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-
+const bcryptJS = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const shopSchema = new mongoose.Schema({
@@ -17,6 +17,7 @@ const shopSchema = new mongoose.Schema({
     required: [true, "Please enter your password"],
     minLength: [4, "Password should be greater than 4 characters"],
     select: false,
+    set: (v) => bcryptJS.hashSync(v, bcryptJS.genSaltSync(10)),
   },
   address: {
     type: String,
@@ -82,14 +83,6 @@ const shopSchema = new mongoose.Schema({
   resetPasswordTime: Date,
 });
 
-//  Hash password
-shopSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
-
-  this.password = await bcrypt.hash(this.password, 10);
-});
 
 // jwt token
 shopSchema.methods.getJwtToken = function () {

@@ -332,7 +332,64 @@ router.put(
     }
   })
 );
+//  forget password
+router.post("/forgot-password",
+catchAsyncError(async (req, res, next) => {
+  try {
+    const {email} = req.body;
+    const user = await User.findOne({email: email});
+    if(!user){
+      return next(new ErrorHandler("User not found with this email", 400));
+    }
+    
+    const token = createActivationToken({user});
+    
+    const emaildata = {
+      email: user.email,
+      subject: "Forget password email",
+      html: `
+      <h1> Hey ${user.name}, </h1> 
+     <h3> if you want to reset your password , click this link bellow.</h3>
+      <br/>
+     <h3> <a href="http://localhost:3000/reset-password/${token}" target="_blank">click!</a> </h3>
+      `
+    }
+    await sendMail(emaildata);
 
+    res.status(200).json({
+      success: true,
+      message: `please go to your ${user.email} email to reset your password`,
+    })
+  } catch (error) {
+    return next(new ErrorHandler(error.message,500));
+  }
+})
+)
+// reset password 
+router.put("/reset-password", catchAsyncError(async (req, res, next) => {
+  try {
+       const {token,password} = req.body;
+       const decoded = jwt.verify(token,
+        process.env.ACTIVATION_SECRET);
+
+        if(!decoded){
+          return next(new ErrorHandler("Jwt not found!",400));
+        }
+        
+      const user = await User.findById(decoded.user._id).select("+password");
+     
+      user.password = password;
+      await user.save();
+        
+      res.status(201).json({
+        success: true,
+        message: "Password reset successfull",
+        user,
+      })
+  } catch (error) {
+    return next(new ErrorHandler(error.message,500));
+  }
+}))
 //   find user information  with userId
 router.get(
   "/user-info/:id",

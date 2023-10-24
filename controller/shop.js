@@ -256,6 +256,64 @@ router.put(
     }
   })
 );
+//  forget password
+router.post("/forgot-password",
+catchAsyncError(async (req, res, next) => {
+  try {
+    const {email} = req.body;
+    const seller = await Shop.findOne({email: email});
+    if(!seller){
+      return next(new ErrorHandler("Seller not found with this email", 400));
+    }
+    
+    const token = createActivationToken({seller});
+    
+    const emaildata = {
+      email: seller.email,
+      subject: "Forget password email",
+      html: `
+      <h1> Hey ${seller.name}, </h1> 
+     <h3> if you want to reset your password , click this link bellow.</h3>
+      <br/>
+     <h3> <a href="http://localhost:3000/shop/reset-password/${token}" target="_blank">click!</a> </h3>
+      `
+    }
+    await sendMail(emaildata);
+
+    res.status(200).json({
+      success: true,
+      message: `please go to your ${seller.email} email to reset your password`,
+    })
+  } catch (error) {
+    return next(new ErrorHandler(error.message,500));
+  }
+})
+)
+// reset password 
+router.put("/reset-password", catchAsyncError(async (req, res, next) => {
+  try {
+       const {token,password} = req.body;
+       const decoded = jwt.verify(token,
+        process.env.ACTIVATION_SECRET);
+
+        if(!decoded){
+          return next(new ErrorHandler("Jwt not found!",400));
+        }
+        
+      const seller = await Shop.findById(decoded.seller._id).select("+password");
+     
+      seller.password = password;
+      await seller.save();
+        
+      res.status(201).json({
+        success: true,
+        message: "Password reset successfull",
+        seller,
+      })
+  } catch (error) {
+    return next(new ErrorHandler(error.message,500));
+  }
+}))
 
 //    all  sellers -- fro Admin
 router.get(
